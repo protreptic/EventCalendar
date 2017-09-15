@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">EventCalendar</string>
+    <string name="event_day">%1$d</string>
+</resources>
