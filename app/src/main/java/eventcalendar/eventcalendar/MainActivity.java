@@ -1,7 +1,7 @@
 package eventcalendar.eventcalendar;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import org.joda.time.LocalDate;
@@ -9,9 +9,10 @@ import org.joda.time.LocalDate;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import eventcalendar.eventcalendar.eventcalendar.EventCalendarView;
 import eventcalendar.eventcalendar.eventcalendar.EventCalendar;
 
-import static android.widget.Toast.LENGTH_LONG;
+import static android.widget.Toast.LENGTH_SHORT;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,12 +34,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        vEventCalendar.setTargetDate(LocalDate.now().withMonthOfYear(9));
-        vEventCalendar.setOnEventDayPickedListener(new EventCalendar.OnEventDayPickedListener() {
+        vEventCalendar.setInitialDate(LocalDate.now());
+        vEventCalendar.setEventCalendarSwipeListener(new EventCalendar.OnMonthChangedListener() {
+            @Override
+            public void onMonthChanged(LocalDate date) {
+                Toast.makeText(getApplicationContext(), date.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        vEventCalendar.setOnEventDayPickedListener(new EventCalendarView.OnEventDayPickedListener() {
 
             @Override
             public void onEventDayPicked(LocalDate pickedDay, boolean hasEvents) {
-                Toast.makeText(getApplicationContext(), "pickedDay: " + pickedDay + " hasEvents:" + hasEvents, LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), pickedDay.toString(), LENGTH_SHORT).show();
             }
 
         });

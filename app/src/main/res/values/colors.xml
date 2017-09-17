@@ -6,6 +6,7 @@
 
     <color name="white">#ffffff</color>
     <color name="white_two">#f0f0f0</color>
+    <color name="white_three">#dcdcdc</color>
     <color name="greyish_brown">#3c3c3c</color>
     <color name="light_gray">#22b4b4b4</color>
 </resources>

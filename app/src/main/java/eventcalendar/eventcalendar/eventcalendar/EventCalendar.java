@@ -1,31 +1,32 @@
 package eventcalendar.eventcalendar.eventcalendar;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.joda.time.LocalDate;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
+import java.util.HashMap;
+
 import eventcalendar.eventcalendar.R;
-import eventcalendar.eventcalendar.eventcalendar.util.HorizontalSpaceItemDecoration;
-import eventcalendar.eventcalendar.eventcalendar.util.VerticalSpaceItemDecoration;
+import eventcalendar.eventcalendar.eventcalendar.EventCalendarView.OnEventDayPickedListener;
 
-import static android.support.v4.content.ContextCompat.getColor;
-import static android.support.v4.content.ContextCompat.getDrawable;
-import static android.view.LayoutInflater.from;
+import static android.graphics.Typeface.createFromAsset;
+import static android.support.v4.view.ViewPager.SCROLL_STATE_IDLE;
 
-public final class EventCalendar extends RecyclerView {
+@SuppressWarnings("FieldCanBeLocal")
+public final class EventCalendar extends LinearLayout {
 
-    public interface OnEventDayPickedListener {
-        void onEventDayPicked(LocalDate pickedDay, boolean hasEvents);
+    public interface OnMonthChangedListener {
+        void onMonthChanged(LocalDate date);
     }
 
     public EventCalendar(Context context) {
@@ -40,27 +41,64 @@ public final class EventCalendar extends RecyclerView {
         init();
     }
 
-    public EventCalendar(Context context, @Nullable AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+    public EventCalendar(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
 
         init();
     }
 
-    private Context mContext;
-    private LocalDate mTargetDate;
-    private LocalDate mTargetMonthDate;
-    private LocalDate mTargetPickedDate;
+    private ImageButton vPrevious;
+    private ImageButton vNext;
+
+    private TextView vMonthAndYear;
+
+    private ViewPager vCalendarSlider;
 
     private void init() {
-        mContext = getContext();
+        LayoutInflater.from(getContext())
+                .inflate(R.layout.l_event_calendar, this, true);
 
-        setTargetDate(LocalDate.now());
-        setLayoutManager(new GridLayoutManager(mContext, 7));
+        vPrevious = (ImageButton) findViewById(R.id.previous);
+        vPrevious.setOnClickListener(new OnClickListener() {
 
-        addItemDecoration(new VerticalSpaceItemDecoration(24));
-        addItemDecoration(new HorizontalSpaceItemDecoration(8));
+            @Override
+            public void onClick(View v) {
+                toPreviousMonth();
+            }
 
-        setAdapter(new EventCalendarAdapter());
+        });
+
+        vNext = (ImageButton) findViewById(R.id.next);
+        vNext.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                toNextMonth();
+            }
+
+        });
+
+        vMonthAndYear = (TextView) findViewById(R.id.month_and_year);
+        vMonthAndYear.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Bold.ttf"));
+
+        vCalendarSlider = (ViewPager) findViewById(R.id.calendar_slider);
+        vCalendarSlider.setAdapter(new EventCalendarPagerAdapter());
+        vCalendarSlider.setCurrentItem(Integer.MAX_VALUE / 2);
+        vCalendarSlider.addOnPageChangeListener(new OnPageChangeListenerImpl() {
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if (SCROLL_STATE_IDLE == state) {
+                    notifyMonthChanged();
+                }
+            }
+        });
+    }
+
+    private LocalDate mInitialDate;
+
+    public void setInitialDate(LocalDate date) {
+        mInitialDate = date;
     }
 
     private OnEventDayPickedListener mOnEventDayPickedListener;
@@ -69,114 +107,103 @@ public final class EventCalendar extends RecyclerView {
         mOnEventDayPickedListener = listener;
     }
 
-    private void notifyEventDayPicked(@NonNull LocalDate pickedDay, boolean hasEvents) {
-        if (mOnEventDayPickedListener != null) {
-            mOnEventDayPickedListener.onEventDayPicked(pickedDay, hasEvents);
+    private OnMonthChangedListener mOnMonthChangedListener;
+
+    public void setEventCalendarSwipeListener(OnMonthChangedListener listener) {
+        mOnMonthChangedListener = listener;
+    }
+
+    private void notifyMonthChanged() {
+        if (mOnMonthChangedListener != null) {
+            mOnMonthChangedListener.onMonthChanged(getCurrentDate());
         }
     }
 
-    public void setTargetDate(@NonNull LocalDate targetDate) {
-        mTargetDate = targetDate;
-        mTargetPickedDate = targetDate;
-        mTargetMonthDate = mTargetDate.withDayOfMonth(1);
+    private void toPreviousMonth() {
+        vCalendarSlider.setCurrentItem(
+                vCalendarSlider.getCurrentItem() - 1, true);
     }
 
-    private class EventCalendarAdapter extends RecyclerView.Adapter<EventDayViewHolder> {
-
-        private static final int EVENT_DAY_EMPTY = 1;
-        private static final int EVENT_DAY = 2;
-
-        @Override
-        public int getItemViewType(int position) {
-            if (position < mTargetMonthDate.getDayOfWeek()) {
-                return EVENT_DAY_EMPTY;
-            }
-
-            if (getEventDay(position).getMonthOfYear() != mTargetMonthDate.getMonthOfYear()) {
-                return EVENT_DAY_EMPTY;
-            }
-
-            return EVENT_DAY;
-        }
-
-        LocalDate getEventDay(int position) {
-            return mTargetMonthDate.plusDays(position - mTargetMonthDate.getDayOfWeek());
-        }
-
-        @Override
-        public EventDayViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new EventDayViewHolder(from(mContext)
-                    .inflate(R.layout.item_calendar_event_day, parent, false));
-        }
-
-        @Override
-        public void onBindViewHolder(EventDayViewHolder holder, int position) {
-            switch (getItemViewType(position)) {
-                case EVENT_DAY_EMPTY: {
-                    holder.bindEmptyEventDay();
-                } break;
-                case EVENT_DAY: {
-                    holder.bindEventDay(getEventDay(position));
-                } break;
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return mTargetMonthDate.dayOfMonth().getMaximumValue() + mTargetMonthDate.getDayOfWeek();
-        }
-
+    private void toNextMonth() {
+        vCalendarSlider.setCurrentItem(
+                vCalendarSlider.getCurrentItem() + 1, true);
     }
 
-    class EventDayViewHolder extends ViewHolder {
+    private void updateCalendarHeader() {
+        LocalDate date = getCurrentDate();
 
-        @BindView(R.id.event_day)
-        TextView vEventDay;
+        vMonthAndYear.setText(getContext().getString(R.string.month_and_year,
+                getResources().getStringArray(R.array.months)[date.getMonthOfYear() - 1],
+                date.getYear()));
+    }
 
-        EventDayViewHolder(View itemView) {
-            super(itemView);
+    private LocalDate getCurrentDate() {
+        return mCache.get(vCalendarSlider.getCurrentItem());
+    }
 
-            ButterKnife.bind(this, itemView);
-        }
+    private EventCalendarView vCalendar;
 
-        void bindEmptyEventDay() {
-            vEventDay.setText("");
-            vEventDay.setTextColor(getColor(getContext(), R.color.greyish_brown));
+    @Nullable
+    public EventCalendarView getEventCalendar() {
+        return vCalendar;
+    }
 
-            itemView.setVisibility(GONE);
-            itemView.setBackground(null);
-            itemView.setOnClickListener(null);
-        }
+    private HashMap<Integer, LocalDate> mCache = new HashMap<>();
 
-        void bindEventDay(final LocalDate date) {
-            vEventDay.setText(getContext().getString(R.string.event_day, date.getDayOfMonth()));
+    private class EventCalendarPagerAdapter extends PagerAdapter {
 
-            if (mTargetPickedDate.equals(date)) {
-                vEventDay.setTextColor(getColor(getContext(), R.color.white));
+        @Override
+        public Object instantiateItem(ViewGroup group, int position) {
+            LocalDate date = mInitialDate;
 
-                itemView.setBackground(getDrawable(getContext(), R.drawable.picked_event_day));
-            } else if (LocalDate.now().equals(date)) {
-                vEventDay.setTextColor(getColor(getContext(), R.color.greyish_brown));
-
-                itemView.setBackground(getDrawable(getContext(), R.drawable.today_event_day));
+            if (mCache.containsKey(position)) {
+                date = mCache.get(position);
             } else {
-                vEventDay.setTextColor(getColor(getContext(), R.color.greyish_brown));
+                if (vCalendarSlider.getCurrentItem() == position) {
+                    date = mInitialDate;
 
-                itemView.setBackground(null);
+                    mCache.put(position, date);
+                } else {
+                    if (vCalendarSlider.getCurrentItem() > position) {
+                        if (mCache.containsKey(position + 1)) {
+                            date = mCache.get(position + 1).minusMonths(1);
+                        }
+                    }
+
+                    if (vCalendarSlider.getCurrentItem() < position) {
+                        if (mCache.containsKey(position - 1)) {
+                            date = mCache.get(position - 1).plusMonths(1);
+                        }
+                    }
+
+                    mCache.put(position, date);
+                }
             }
 
-            itemView.setVisibility(VISIBLE);
-            itemView.setOnClickListener(new View.OnClickListener() {
+            vCalendar = new EventCalendarView(getContext());
+            vCalendar.setOnEventDayPickedListener(mOnEventDayPickedListener);
+            vCalendar.setDate(date);
 
-                @Override
-                public void onClick(View v) {
-                    mTargetPickedDate = date;
+            group.addView(vCalendar);
 
-                    getAdapter().notifyDataSetChanged();
-                    notifyEventDayPicked(date, false);
-                }
+            updateCalendarHeader();
 
-            });
+            return vCalendar;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup group, int position, Object view) {
+            group.removeView((View) view);
+        }
+
+        @Override
+        public int getCount() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;
         }
 
     }
