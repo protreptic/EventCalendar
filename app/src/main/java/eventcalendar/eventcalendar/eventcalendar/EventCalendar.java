@@ -1,5 +1,6 @@
 package eventcalendar.eventcalendar.eventcalendar;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
@@ -56,7 +57,7 @@ public final class EventCalendar extends LinearLayout {
 
     private void init() {
         LayoutInflater.from(getContext())
-                .inflate(R.layout.l_event_calendar, this, true);
+                .inflate(R.layout.w_event_calendar, this, true);
 
         vPrevious = (ImageButton) findViewById(R.id.previous);
         vPrevious.setOnClickListener(new OnClickListener() {
@@ -148,6 +149,7 @@ public final class EventCalendar extends LinearLayout {
         return vCalendar;
     }
 
+    @SuppressLint("UseSparseArrays")
     private HashMap<Integer, LocalDate> mCache = new HashMap<>();
 
     private class EventCalendarPagerAdapter extends PagerAdapter {
