@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.joda.time.LocalDate;
@@ -215,8 +216,11 @@ public final class EventCalendarView extends RecyclerView {
                             getDrawable(getContext(), R.drawable.event_calendar_date_indicator);
                     indicatorDrawable.setColor(event.getColor());
 
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(getDp(6), getDp(6));
+                    params.setMargins(0, 0, getDp(1), 0);
+
                     View indicator = new View(getContext());
-                    indicator.setLayoutParams(new LayoutParams(getDp(6), getDp(6)));
+                    indicator.setLayoutParams(params);
                     indicator.setBackground(indicatorDrawable);
 
                     vDateIndicator.addView(indicator);
