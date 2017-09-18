@@ -8,6 +8,7 @@ import android.widget.Toast;
 import org.joda.time.LocalDate;
 
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -40,21 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
         vEventCalendar.setInitialDate(LocalDate.now());
         vEventCalendar.setPickedDate(LocalDate.now().withDayOfMonth(13));
-        vEventCalendar.setEvents(Arrays.asList(
-                new Event(LocalDate.now().plusDays(2), Color.parseColor("#ff3c41")),
-                new Event(LocalDate.now().plusDays(2), Color.parseColor("#32c896")),
-                new Event(LocalDate.now().plusDays(2), Color.parseColor("#ffc800")),
-                new Event(LocalDate.now().plusDays(2), Color.parseColor("#4b9bf5")),
-
-                new Event(LocalDate.now().plusDays(4), Color.parseColor("#ff3c41")),
-                new Event(LocalDate.now().plusDays(4), Color.parseColor("#32c896")),
-                new Event(LocalDate.now().plusDays(4), Color.parseColor("#ffc800")),
-                new Event(LocalDate.now().plusDays(4), Color.parseColor("#4b9bf5")),
-
-                new Event(LocalDate.now().plusDays(14), Color.parseColor("#ff3c41")),
-                new Event(LocalDate.now().plusDays(14), Color.parseColor("#32c896")),
-                new Event(LocalDate.now().plusDays(44), Color.parseColor("#ffc800")),
-                new Event(LocalDate.now().plusDays(44), Color.parseColor("#4b9bf5"))));
+        vEventCalendar.setEvents(sEvents);
         vEventCalendar.setOnMonthChangedListener(new EventCalendar.OnMonthChangedListener() {
             @Override
             public void onMonthChanged(LocalDate date) {
@@ -75,5 +62,31 @@ public class MainActivity extends AppCompatActivity {
 
         mUnbinder.unbind();
     }
+
+    private static List<Event> sEvents =
+        Arrays.asList(
+                new Event(LocalDate.now(), Color.parseColor("#ff3c41")),
+                new Event(LocalDate.now(), Color.parseColor("#32c896")),
+                new Event(LocalDate.now(), Color.parseColor("#4b9bf5")),
+
+                new Event(LocalDate.now().plusDays(2), Color.parseColor("#ff3c41")),
+                new Event(LocalDate.now().plusDays(2), Color.parseColor("#32c896")),
+                new Event(LocalDate.now().plusDays(2), Color.parseColor("#ffc800")),
+                new Event(LocalDate.now().plusDays(2), Color.parseColor("#4b9bf5")),
+
+                new Event(LocalDate.now().plusDays(4), Color.parseColor("#ff3c41")),
+                new Event(LocalDate.now().plusDays(4), Color.parseColor("#32c896")),
+                new Event(LocalDate.now().plusDays(4), Color.parseColor("#ffc800")),
+                new Event(LocalDate.now().plusDays(4), Color.parseColor("#4b9bf5")),
+
+                new Event(LocalDate.now().plusDays(14), Color.parseColor("#ff3c41")),
+                new Event(LocalDate.now().plusDays(14), Color.parseColor("#32c896")),
+                new Event(LocalDate.now().plusDays(44), Color.parseColor("#ffc800")),
+                new Event(LocalDate.now().plusDays(44), Color.parseColor("#4b9bf5")),
+
+                new Event(LocalDate.now().withDayOfMonth(7), Color.parseColor("#32c896")),
+                new Event(LocalDate.now().withDayOfMonth(7), Color.parseColor("#ffc800")),
+
+                new Event(LocalDate.now().plusDays(11), Color.parseColor("#4b9bf5")));
 
 }

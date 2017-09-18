@@ -170,7 +170,6 @@ public final class EventCalendarView extends RecyclerView {
             vDateIndicator.removeAllViews();
 
             vDate.setBackground(null);
-            vDate.setOnClickListener(null);
         }
 
         void bindDate(final LocalDate date) {
@@ -178,7 +177,7 @@ public final class EventCalendarView extends RecyclerView {
             prepareIndicator(date);
             prepareBackground(date);
 
-            vDate.setOnClickListener(new View.OnClickListener() {
+            itemView.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
