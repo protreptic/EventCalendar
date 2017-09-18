@@ -87,6 +87,27 @@ public final class EventCalendar extends LinearLayout {
         vMonthAndYear = (TextView) findViewById(R.id.month_and_year);
         vMonthAndYear.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Bold.ttf"));
 
+        TextView tvMonday = (TextView) findViewById(R.id.monday);
+        tvMonday.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
+
+        TextView tvTuesday = (TextView) findViewById(R.id.tuesday);
+        tvTuesday.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
+
+        TextView tvWednesday = (TextView) findViewById(R.id.wednesday);
+        tvWednesday.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
+
+        TextView tvThursday = (TextView) findViewById(R.id.thursday);
+        tvThursday.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
+
+        TextView tvFriday = (TextView) findViewById(R.id.friday);
+        tvFriday.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
+
+        TextView tvSaturday = (TextView) findViewById(R.id.saturday);
+        tvSaturday.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
+
+        TextView tvSunday = (TextView) findViewById(R.id.sunday);
+        tvSunday.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
+
         vCalendarSlider = (ViewPager) findViewById(R.id.calendar_slider);
         vCalendarSlider.setAdapter(new EventCalendarPagerAdapter());
         vCalendarSlider.setCurrentItem(Integer.MAX_VALUE / 2);

@@ -35,10 +35,12 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
 
         vEventCalendar.setInitialDate(LocalDate.now());
-        vEventCalendar.setPickedDate(LocalDate.now().plusYears(1));
+        vEventCalendar.setPickedDate(LocalDate.now().withDayOfMonth(13));
         vEventCalendar.setOnMonthChangedListener(new EventCalendar.OnMonthChangedListener() {
             @Override
-            public void onMonthChanged(LocalDate date) {}
+            public void onMonthChanged(LocalDate date) {
+                Toast.makeText(getApplicationContext(), date.toString(), LENGTH_SHORT).show();
+            }
         });
         vEventCalendar.setOnDatePickedListener(new OnDatePickedListener() {
             @Override
