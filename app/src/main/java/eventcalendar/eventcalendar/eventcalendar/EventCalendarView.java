@@ -47,15 +47,15 @@ public final class EventCalendarView extends RecyclerView {
 
     private Context mContext;
 
-    private LocalDate mMonthDate;
+    private LocalDate mDate;
     private LocalDate mPickedDate;
 
     private void init() {
         mContext = getContext();
 
         setDate(LocalDate.now());
-        setLayoutManager(new GridLayoutManager(mContext, 7));
         setAdapter(new EventCalendarAdapter());
+        setLayoutManager(new GridLayoutManager(mContext, 7));
     }
 
     private OnDatePickedListener mOnDatePickedListener;
@@ -64,15 +64,15 @@ public final class EventCalendarView extends RecyclerView {
         mOnDatePickedListener = listener;
     }
 
-    private void notifyEventDayPicked(@NonNull LocalDate pickedDay) {
+    private void notifyDatePicked(@NonNull LocalDate pickedDay) {
         if (mOnDatePickedListener != null) {
             mOnDatePickedListener.onEventDayPicked(this, pickedDay);
         }
     }
 
     public void setDate(@NonNull LocalDate date) {
+        mDate = date.withDayOfMonth(1);
         mPickedDate = null;
-        mMonthDate = date.withDayOfMonth(1);
     }
 
     @Nullable
@@ -88,57 +88,57 @@ public final class EventCalendarView extends RecyclerView {
 
     private class EventCalendarAdapter extends RecyclerView.Adapter<EventDayViewHolder> {
 
-        private static final int EVENT_DAY_EMPTY = 1;
-        private static final int EVENT_DAY = 2;
+        private static final int TYPE_DATE_EMPTY = 1;
+        private static final int TYPE_DATE = 2;
 
         @Override
         public int getItemViewType(int position) {
-            if (position + 1 < mMonthDate.getDayOfWeek()) {
-                return EVENT_DAY_EMPTY;
+            if ((position + 1 < mDate.getDayOfWeek()) ||
+                    (getDate(position).getMonthOfYear() != mDate.getMonthOfYear())) {
+                return TYPE_DATE_EMPTY;
             }
 
-            if (getEventDay(position).getMonthOfYear() != mMonthDate.getMonthOfYear()) {
-                return EVENT_DAY_EMPTY;
-            }
-
-            return EVENT_DAY;
+            return TYPE_DATE;
         }
 
-        LocalDate getEventDay(int position) {
-            return mMonthDate.plusDays(position - mMonthDate.getDayOfWeek() + 1);
+        LocalDate getDate(int position) {
+            return mDate.plusDays(position - mDate.getDayOfWeek() + 1);
         }
 
         @Override
         public EventDayViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             return new EventDayViewHolder(from(mContext)
-                    .inflate(R.layout.l_event_calendar_event_day, parent, false));
+                    .inflate(R.layout.l_event_calendar_date, parent, false));
         }
 
         @Override
         public void onBindViewHolder(EventDayViewHolder holder, int position) {
-            LocalDate eventDay = getEventDay(position);
+            LocalDate eventDay = getDate(position);
 
             switch (getItemViewType(position)) {
-                case EVENT_DAY_EMPTY: {
-                    holder.bindEmptyEventDay();
+                case TYPE_DATE_EMPTY: {
+                    holder.bindEmptyDate();
                 } break;
-                case EVENT_DAY: {
-                    holder.bindEventDay(eventDay);
+                case TYPE_DATE: {
+                    holder.bindDate(eventDay);
                 } break;
             }
         }
 
         @Override
         public int getItemCount() {
-            return mMonthDate.dayOfMonth().getMaximumValue() + mMonthDate.getDayOfWeek();
+            return mDate.dayOfMonth().getMaximumValue() + mDate.getDayOfWeek();
         }
 
     }
 
     class EventDayViewHolder extends ViewHolder {
 
-        @BindView(R.id.event_day)
-        TextView vEventDay;
+        @BindView(R.id.event_date)
+        TextView vDate;
+
+        @BindView(R.id.event_indicators)
+        ViewGroup vDateIndicators;
 
         EventDayViewHolder(View itemView) {
             super(itemView);
@@ -146,34 +146,39 @@ public final class EventCalendarView extends RecyclerView {
             ButterKnife.bind(this, itemView);
         }
 
-        void bindEmptyEventDay() {
-            vEventDay.setText("");
-            vEventDay.setTextColor(getColor(getContext(), R.color.greyish_brown));
+        void bindEmptyDate() {
+            vDate.setText("");
+            vDate.setTextColor(getColor(getContext(), R.color.greyish_brown));
 
-            itemView.setVisibility(GONE);
-            itemView.setBackground(null);
-            itemView.setOnClickListener(null);
+            vDateIndicators.setVisibility(GONE);
+            vDateIndicators.removeAllViews();
+
+            vDate.setBackground(null);
+            vDate.setOnClickListener(null);
         }
 
-        void bindEventDay(final LocalDate date) {
-            vEventDay.setText(getContext().getString(R.string.event_day, date.getDayOfMonth()));
-            vEventDay.setTextColor(getColor(getContext(),
-                    isPicked(date) ? R.color.white : R.color.greyish_brown));
-            vEventDay.setTypeface(
+        void bindDate(final LocalDate date) {
+            vDate.setText(getContext().getString(R.string.event_day, date.getDayOfMonth()));
+            vDate.setTextColor(getColor(getContext(),
+                    isPicked(date) ?
+                            R.color.white :
+                            R.color.greyish_brown));
+            vDate.setTypeface(
                     isPicked(date) ?
                             createFromAsset(getContext().getAssets(), "font/Gilroy-Bold.ttf") :
                             createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
 
+            vDateIndicators.setVisibility(VISIBLE);
+
             if (isPicked(date)) {
-                itemView.setBackground(getDrawable(getContext(), R.drawable.picked_event_day));
+                vDate.setBackground(getDrawable(getContext(), R.drawable.picked_event_day));
             } else if (isToday(date)) {
-                itemView.setBackground(getDrawable(getContext(), R.drawable.today_event_day));
+                vDate.setBackground(getDrawable(getContext(), R.drawable.today_event_day));
             } else {
-                itemView.setBackground(null);
+                vDate.setBackground(getDrawable(getContext(), R.drawable.ripple));
             }
 
-            itemView.setVisibility(VISIBLE);
-            itemView.setOnClickListener(new View.OnClickListener() {
+            vDate.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
@@ -182,18 +187,18 @@ public final class EventCalendarView extends RecyclerView {
                     mPickedDate = date;
 
                     getAdapter().notifyDataSetChanged();
-                    notifyEventDayPicked(date);
+                    notifyDatePicked(date);
                 }
 
             });
         }
 
-        private boolean isToday(LocalDate eventDay) {
-            return LocalDate.now().equals(eventDay);
+        private boolean isToday(LocalDate date) {
+            return LocalDate.now().equals(date);
         }
 
-        private boolean isPicked(LocalDate eventDay) {
-            return mPickedDate != null && mPickedDate.equals(eventDay);
+        private boolean isPicked(LocalDate date) {
+            return mPickedDate != null && mPickedDate.equals(date);
         }
 
     }

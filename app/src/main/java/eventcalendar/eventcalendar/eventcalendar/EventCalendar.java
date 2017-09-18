@@ -62,7 +62,7 @@ public final class EventCalendar extends LinearLayout {
 
     private void init() {
         LayoutInflater.from(getContext())
-                .inflate(R.layout.w_event_calendar, this, true);
+                .inflate(R.layout.l_event_calendar, this, true);
 
         vPrevious = (ImageButton) findViewById(R.id.previous);
         vPrevious.setOnClickListener(new OnClickListener() {
