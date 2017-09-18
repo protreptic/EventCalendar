@@ -1,6 +1,7 @@
 package eventcalendar.eventcalendar.eventcalendar;
 
 import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
@@ -210,10 +211,13 @@ public final class EventCalendarView extends RecyclerView {
 
             for (Event event : mEvents)  {
                 if (date.equals(event.getDate())) {
+                    GradientDrawable indicatorDrawable = (GradientDrawable)
+                            getDrawable(getContext(), R.drawable.event_calendar_date_indicator);
+                    indicatorDrawable.setColor(event.getColor());
+
                     View indicator = new View(getContext());
                     indicator.setLayoutParams(new LayoutParams(getDp(6), getDp(6)));
-                    indicator.setPadding(0, 0, getDp(2), 0);
-                    indicator.setBackgroundColor(event.getColor());
+                    indicator.setBackground(indicatorDrawable);
 
                     vDateIndicator.addView(indicator);
                 }
@@ -222,9 +226,9 @@ public final class EventCalendarView extends RecyclerView {
 
         private void prepareBackground(LocalDate date) {
             if (isPickedDate(date)) {
-                vDate.setBackground(getDrawable(getContext(), R.drawable.picked_event_day));
+                vDate.setBackground(getDrawable(getContext(), R.drawable.event_calendar_date_picked));
             } else if (isTodayDate(date)) {
-                vDate.setBackground(getDrawable(getContext(), R.drawable.today_event_day));
+                vDate.setBackground(getDrawable(getContext(), R.drawable.event_calendar_date_today));
             } else {
                 vDate.setBackground(getDrawable(getContext(), R.drawable.ripple));
             }
