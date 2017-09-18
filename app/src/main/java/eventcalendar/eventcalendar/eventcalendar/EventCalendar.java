@@ -15,10 +15,11 @@ import android.widget.TextView;
 
 import org.joda.time.LocalDate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import eventcalendar.eventcalendar.R;
-import eventcalendar.eventcalendar.eventcalendar.EventCalendarView.OnEventDayPickedListener;
 
 import static android.graphics.Typeface.createFromAsset;
 import static android.support.v4.view.ViewPager.SCROLL_STATE_IDLE;
@@ -28,6 +29,10 @@ public final class EventCalendar extends LinearLayout {
 
     public interface OnMonthChangedListener {
         void onMonthChanged(LocalDate date);
+    }
+
+    public interface OnDatePickedListener {
+        void onDatePicked(LocalDate pickedDate);
     }
 
     public EventCalendar(Context context) {
@@ -100,17 +105,37 @@ public final class EventCalendar extends LinearLayout {
 
     public void setInitialDate(LocalDate date) {
         mInitialDate = date;
+        mPickedDate = date;
     }
 
-    private OnEventDayPickedListener mOnEventDayPickedListener;
+    private OnDatePickedListener mOnDatePickedListener;
 
-    public void setOnEventDayPickedListener(@Nullable OnEventDayPickedListener listener) {
-        mOnEventDayPickedListener = listener;
+    public void setOnDatePickedListener(OnDatePickedListener listener) {
+        mOnDatePickedListener = listener;
     }
+
+    private void notifyDatePicked() {
+        if (mOnDatePickedListener != null) {
+            mOnDatePickedListener.onDatePicked(mPickedDate);
+        }
+    }
+
+    private EventCalendarView.OnDatePickedListener mOnEventDayPickedListener =
+            new EventCalendarView.OnDatePickedListener() {
+
+        @Override
+        public void onEventDayPicked(EventCalendarView calendar, LocalDate pickedDate) {
+            setPickedDate(pickedDate);
+            dropPickedDate(calendar);
+
+            notifyDatePicked();
+        }
+
+    };
 
     private OnMonthChangedListener mOnMonthChangedListener;
 
-    public void setEventCalendarSwipeListener(OnMonthChangedListener listener) {
+    public void setOnMonthChangedListener(OnMonthChangedListener listener) {
         mOnMonthChangedListener = listener;
     }
 
@@ -144,13 +169,23 @@ public final class EventCalendar extends LinearLayout {
 
     private EventCalendarView vCalendar;
 
-    @Nullable
-    public EventCalendarView getEventCalendar() {
-        return vCalendar;
-    }
-
     @SuppressLint("UseSparseArrays")
     private HashMap<Integer, LocalDate> mCache = new HashMap<>();
+    private List<EventCalendarView> mCalendars = new ArrayList<>();
+
+    private LocalDate mPickedDate;
+
+    public void setPickedDate(LocalDate pickedDate) {
+        mPickedDate = pickedDate;
+    }
+
+    public void dropPickedDate(EventCalendarView view) {
+        for (EventCalendarView calendar : mCalendars) {
+            if (calendar == view) continue;
+
+            calendar.setPickedEventDay(null);
+        }
+    }
 
     private class EventCalendarPagerAdapter extends PagerAdapter {
 
@@ -186,15 +221,23 @@ public final class EventCalendar extends LinearLayout {
             vCalendar.setOnEventDayPickedListener(mOnEventDayPickedListener);
             vCalendar.setDate(date);
 
+            if (date.withDayOfMonth(1).equals(mPickedDate.withDayOfMonth(1))) {
+                vCalendar.setPickedEventDay(mPickedDate);
+            }
+
             group.addView(vCalendar);
+
+            mCalendars.add(vCalendar);
 
             updateCalendarHeader();
 
             return vCalendar;
         }
 
+        @SuppressWarnings("RedundantCast")
         @Override
         public void destroyItem(ViewGroup group, int position, Object view) {
+            mCalendars.remove((EventCalendarView) view);
             group.removeView((View) view);
         }
 

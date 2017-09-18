@@ -9,8 +9,8 @@ import org.joda.time.LocalDate;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import eventcalendar.eventcalendar.eventcalendar.EventCalendarView;
 import eventcalendar.eventcalendar.eventcalendar.EventCalendar;
+import eventcalendar.eventcalendar.eventcalendar.EventCalendar.OnDatePickedListener;
 
 import static android.widget.Toast.LENGTH_SHORT;
 
@@ -35,19 +35,16 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
 
         vEventCalendar.setInitialDate(LocalDate.now());
-        vEventCalendar.setEventCalendarSwipeListener(new EventCalendar.OnMonthChangedListener() {
+        vEventCalendar.setPickedDate(LocalDate.now().plusYears(1));
+        vEventCalendar.setOnMonthChangedListener(new EventCalendar.OnMonthChangedListener() {
             @Override
-            public void onMonthChanged(LocalDate date) {
-                Toast.makeText(getApplicationContext(), date.toString(), Toast.LENGTH_SHORT).show();
-            }
+            public void onMonthChanged(LocalDate date) {}
         });
-        vEventCalendar.setOnEventDayPickedListener(new EventCalendarView.OnEventDayPickedListener() {
-
+        vEventCalendar.setOnDatePickedListener(new OnDatePickedListener() {
             @Override
-            public void onEventDayPicked(LocalDate pickedDay, boolean hasEvents) {
-                Toast.makeText(getApplicationContext(), pickedDay.toString(), LENGTH_SHORT).show();
+            public void onDatePicked(LocalDate pickedDate) {
+                Toast.makeText(getApplicationContext(), pickedDate.toString(), LENGTH_SHORT).show();
             }
-
         });
     }
 
