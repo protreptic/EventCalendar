@@ -12,6 +12,10 @@ import android.widget.TextView;
 
 import org.joda.time.LocalDate;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eventcalendar.eventcalendar.R;
@@ -19,6 +23,8 @@ import eventcalendar.eventcalendar.R;
 import static android.graphics.Typeface.createFromAsset;
 import static android.support.v4.content.ContextCompat.getColor;
 import static android.support.v4.content.ContextCompat.getDrawable;
+import static android.util.TypedValue.COMPLEX_UNIT_DIP;
+import static android.util.TypedValue.applyDimension;
 import static android.view.LayoutInflater.from;
 
 public final class EventCalendarView extends RecyclerView {
@@ -80,10 +86,20 @@ public final class EventCalendarView extends RecyclerView {
         return mPickedDate;
     }
 
-    public void setPickedEventDay(LocalDate pickedDate) {
+    public void setPickedDate(@NonNull LocalDate pickedDate) {
         mPickedDate = pickedDate;
 
         getAdapter().notifyDataSetChanged();
+    }
+
+    private List<Event> mEvents = new ArrayList<>();
+
+    public void setEvents(@Nullable List<Event> events) {
+        if (events == null) {
+            events = Collections.emptyList();
+        }
+
+        mEvents = events;
     }
 
     private class EventCalendarAdapter extends RecyclerView.Adapter<EventDayViewHolder> {
@@ -137,8 +153,8 @@ public final class EventCalendarView extends RecyclerView {
         @BindView(R.id.event_date)
         TextView vDate;
 
-        @BindView(R.id.event_indicators)
-        ViewGroup vDateIndicators;
+        @BindView(R.id.event_indicator)
+        ViewGroup vDateIndicator;
 
         EventDayViewHolder(View itemView) {
             super(itemView);
@@ -150,39 +166,23 @@ public final class EventCalendarView extends RecyclerView {
             vDate.setText("");
             vDate.setTextColor(getColor(getContext(), R.color.greyish_brown));
 
-            vDateIndicators.setVisibility(GONE);
-            vDateIndicators.removeAllViews();
+            vDateIndicator.setVisibility(GONE);
+            vDateIndicator.removeAllViews();
 
             vDate.setBackground(null);
             vDate.setOnClickListener(null);
         }
 
         void bindDate(final LocalDate date) {
-            vDate.setText(getContext().getString(R.string.event_day, date.getDayOfMonth()));
-            vDate.setTextColor(getColor(getContext(),
-                    isPicked(date) ?
-                            R.color.white :
-                            R.color.greyish_brown));
-            vDate.setTypeface(
-                    isPicked(date) ?
-                            createFromAsset(getContext().getAssets(), "font/Gilroy-Bold.ttf") :
-                            createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
-
-            vDateIndicators.setVisibility(VISIBLE);
-
-            if (isPicked(date)) {
-                vDate.setBackground(getDrawable(getContext(), R.drawable.picked_event_day));
-            } else if (isToday(date)) {
-                vDate.setBackground(getDrawable(getContext(), R.drawable.today_event_day));
-            } else {
-                vDate.setBackground(getDrawable(getContext(), R.drawable.ripple));
-            }
+            prepareText(date);
+            prepareIndicator(date);
+            prepareBackground(date);
 
             vDate.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
-                    if (isPicked(date)) return;
+                    if (isPickedDate(date)) return;
 
                     mPickedDate = date;
 
@@ -193,12 +193,55 @@ public final class EventCalendarView extends RecyclerView {
             });
         }
 
-        private boolean isToday(LocalDate date) {
+        private void prepareText(LocalDate date) {
+            vDate.setText(getContext().getString(R.string.event_day, date.getDayOfMonth()));
+            vDate.setTextColor(getColor(getContext(),
+                    isPickedDate(date) ?
+                            R.color.white :
+                            R.color.greyish_brown));
+            vDate.setTypeface(
+                    isPickedDate(date) ?
+                            createFromAsset(getContext().getAssets(), "font/Gilroy-Bold.ttf") :
+                            createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
+        }
+
+        private void prepareIndicator(LocalDate date) {
+            vDateIndicator.setVisibility(VISIBLE);
+            vDateIndicator.removeAllViews();
+
+            for (Event event : mEvents)  {
+                if (date.equals(event.getDate())) {
+                    View indicator = new View(getContext());
+                    indicator.setLayoutParams(new LayoutParams(getDp(6), getDp(6)));
+                    indicator.setPadding(0, 0, getDp(2), 0);
+                    indicator.setBackgroundColor(event.getColor());
+
+                    vDateIndicator.addView(indicator);
+                }
+            }
+        }
+
+        private void prepareBackground(LocalDate date) {
+            if (isPickedDate(date)) {
+                vDate.setBackground(getDrawable(getContext(), R.drawable.picked_event_day));
+            } else if (isTodayDate(date)) {
+                vDate.setBackground(getDrawable(getContext(), R.drawable.today_event_day));
+            } else {
+                vDate.setBackground(getDrawable(getContext(), R.drawable.ripple));
+            }
+        }
+
+        private boolean isTodayDate(LocalDate date) {
             return LocalDate.now().equals(date);
         }
 
-        private boolean isPicked(LocalDate date) {
+        private boolean isPickedDate(LocalDate date) {
             return mPickedDate != null && mPickedDate.equals(date);
+        }
+
+        private int getDp(int px) {
+            return (int) applyDimension(COMPLEX_UNIT_DIP, px,
+                    getResources().getDisplayMetrics());
         }
 
     }

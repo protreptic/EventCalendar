@@ -2,6 +2,7 @@ package eventcalendar.eventcalendar.eventcalendar;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -16,6 +17,8 @@ import android.widget.TextView;
 import org.joda.time.LocalDate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -55,9 +58,7 @@ public final class EventCalendar extends LinearLayout {
 
     private ImageButton vPrevious;
     private ImageButton vNext;
-
     private TextView vMonthAndYear;
-
     private ViewPager vCalendarSlider;
 
     private void init() {
@@ -87,6 +88,23 @@ public final class EventCalendar extends LinearLayout {
         vMonthAndYear = (TextView) findViewById(R.id.month_and_year);
         vMonthAndYear.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Bold.ttf"));
 
+        vCalendarSlider = (ViewPager) findViewById(R.id.calendar_slider);
+        vCalendarSlider.setAdapter(new EventCalendarPagerAdapter());
+        vCalendarSlider.setCurrentItem(Integer.MAX_VALUE / 2);
+        vCalendarSlider.addOnPageChangeListener(new OnPageChangeListenerImpl() {
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if (SCROLL_STATE_IDLE == state) {
+                    notifyMonthChanged();
+                }
+            }
+        });
+
+        initWeekDays();
+    }
+
+    private void initWeekDays() {
         TextView tvMonday = (TextView) findViewById(R.id.monday);
         tvMonday.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
 
@@ -107,19 +125,6 @@ public final class EventCalendar extends LinearLayout {
 
         TextView tvSunday = (TextView) findViewById(R.id.sunday);
         tvSunday.setTypeface(createFromAsset(getContext().getAssets(), "font/Gilroy-Medium.ttf"));
-
-        vCalendarSlider = (ViewPager) findViewById(R.id.calendar_slider);
-        vCalendarSlider.setAdapter(new EventCalendarPagerAdapter());
-        vCalendarSlider.setCurrentItem(Integer.MAX_VALUE / 2);
-        vCalendarSlider.addOnPageChangeListener(new OnPageChangeListenerImpl() {
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-                if (SCROLL_STATE_IDLE == state) {
-                    notifyMonthChanged();
-                }
-            }
-        });
     }
 
     private LocalDate mInitialDate;
@@ -204,8 +209,18 @@ public final class EventCalendar extends LinearLayout {
         for (EventCalendarView calendar : mCalendars) {
             if (calendar == view) continue;
 
-            calendar.setPickedEventDay(null);
+            calendar.setPickedDate(null);
         }
+    }
+
+    private List<Event> mEvents = new ArrayList<>();
+
+    public void setEvents(@Nullable List<Event> events) {
+        if (events == null) {
+            events = Collections.emptyList();
+        }
+
+        mEvents = events;
     }
 
     private class EventCalendarPagerAdapter extends PagerAdapter {
@@ -241,9 +256,10 @@ public final class EventCalendar extends LinearLayout {
             vCalendar = new EventCalendarView(getContext());
             vCalendar.setOnEventDayPickedListener(mOnEventDayPickedListener);
             vCalendar.setDate(date);
+            vCalendar.setEvents(mEvents);
 
             if (date.withDayOfMonth(1).equals(mPickedDate.withDayOfMonth(1))) {
-                vCalendar.setPickedEventDay(mPickedDate);
+                vCalendar.setPickedDate(mPickedDate);
             }
 
             group.addView(vCalendar);

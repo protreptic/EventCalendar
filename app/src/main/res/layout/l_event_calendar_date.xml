@@ -21,35 +21,10 @@
         tools:text="11" />
 
     <LinearLayout
-        android:id="@+id/event_indicators"
-        android:layout_width="40dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:id="@+id/event_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="1dp"
         android:orientation="horizontal"
-        android:gravity="center">
-
-        <View
-            android:layout_width="6dp"
-            android:layout_height="6dp"
-            android:layout_margin="1dp"
-            android:background="#ff0000" />
-
-        <View
-            android:layout_width="6dp"
-            android:layout_height="6dp"
-            android:layout_margin="1dp"
-            android:background="#00ff00" />
-
-        <View
-            android:layout_width="6dp"
-            android:layout_height="6dp"
-            android:layout_margin="1dp"
-            android:background="#0000ff" />
-
-        <View
-            android:layout_width="6dp"
-            android:layout_height="6dp"
-            android:layout_margin="1dp"
-            android:background="#000000" />
-    </LinearLayout>
+        android:gravity="center" />
 </LinearLayout>

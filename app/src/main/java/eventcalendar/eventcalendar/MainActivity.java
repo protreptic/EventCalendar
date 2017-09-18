@@ -1,14 +1,18 @@
 package eventcalendar.eventcalendar;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import org.joda.time.LocalDate;
 
+import java.util.Arrays;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import eventcalendar.eventcalendar.eventcalendar.Event;
 import eventcalendar.eventcalendar.eventcalendar.EventCalendar;
 import eventcalendar.eventcalendar.eventcalendar.EventCalendar.OnDatePickedListener;
 
@@ -36,6 +40,21 @@ public class MainActivity extends AppCompatActivity {
 
         vEventCalendar.setInitialDate(LocalDate.now());
         vEventCalendar.setPickedDate(LocalDate.now().withDayOfMonth(13));
+        vEventCalendar.setEvents(Arrays.asList(
+                new Event(LocalDate.now().plusDays(2), Color.parseColor("#ff3c41")),
+                new Event(LocalDate.now().plusDays(2), Color.parseColor("#32c896")),
+                new Event(LocalDate.now().plusDays(2), Color.parseColor("#ffc800")),
+                new Event(LocalDate.now().plusDays(2), Color.parseColor("#4b9bf5")),
+
+                new Event(LocalDate.now().plusDays(4), Color.parseColor("#ff3c41")),
+                new Event(LocalDate.now().plusDays(4), Color.parseColor("#32c896")),
+                new Event(LocalDate.now().plusDays(4), Color.parseColor("#ffc800")),
+                new Event(LocalDate.now().plusDays(4), Color.parseColor("#4b9bf5")),
+
+                new Event(LocalDate.now().plusDays(14), Color.parseColor("#ff3c41")),
+                new Event(LocalDate.now().plusDays(14), Color.parseColor("#32c896")),
+                new Event(LocalDate.now().plusDays(44), Color.parseColor("#ffc800")),
+                new Event(LocalDate.now().plusDays(44), Color.parseColor("#4b9bf5"))));
         vEventCalendar.setOnMonthChangedListener(new EventCalendar.OnMonthChangedListener() {
             @Override
             public void onMonthChanged(LocalDate date) {
