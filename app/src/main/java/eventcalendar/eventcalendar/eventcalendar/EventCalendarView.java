@@ -124,7 +124,7 @@ public final class EventCalendarView extends RecyclerView {
         @Override
         public EventDayViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             return new EventDayViewHolder(from(mContext)
-                    .inflate(R.layout.l_event_calendar_date, parent, false));
+                    .inflate(R.layout.view_event_calendar_date, parent, false));
         }
 
         @Override
@@ -170,7 +170,6 @@ public final class EventCalendarView extends RecyclerView {
             vDateIndicator.removeAllViews();
 
             vDate.setBackground(null);
-            vDate.setOnClickListener(null);
         }
 
         void bindDate(final LocalDate date) {
@@ -178,7 +177,7 @@ public final class EventCalendarView extends RecyclerView {
             prepareIndicator(date);
             prepareBackground(date);
 
-            vDate.setOnClickListener(new View.OnClickListener() {
+            itemView.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
